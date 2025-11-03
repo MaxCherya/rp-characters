@@ -1,24 +1,18 @@
-import { Provider } from "@/components/ui/provider"
 import type { Metadata } from "next";
 import "./globals.css";
-import Providers from "./providers";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "RP Characters",
   description: "Create/generate unique characters for your stories.",
 };
 
-export default function RootLayout(props: { children: React.ReactNode }) {
-  const { children } = props
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body>
-        <Provider>
-          <Providers>
-            {children}
-          </Providers>
-        </Provider>
+        <Providers>{children}</Providers>
       </body>
     </html>
-  )
+  );
 }

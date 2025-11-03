@@ -1,12 +1,14 @@
 'use client';
 
-import { Container, Heading, Text } from "@chakra-ui/react";
+import { Button, Container, Heading, Text } from "@chakra-ui/react";
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <Container centerContent className="min-h-screen justify-center bg-white">
-      <Heading size={'6xl'} color={'black'}>RP Characters</Heading>
-      <Text color={"blackAlpha.700"}>RP Characters - create/generate unique characters for your stories.</Text>
+    <Container minH={'100dvh'} centerContent justifyContent={'center'}>
+      <Heading size={{ base: '5xl' }}>RP Characters</Heading>
+      <Text textStyle={{ base: 'xs' }} textAlign={{ base: 'center' }}>RP Characters - create/generate unique characters for your stories.</Text>
+      <Button size={{ base: 'xs' }} asChild marginTop={'8'} colorPalette={'blue'}><Link href={'/auth'}>Getting Started</Link></Button>
     </Container>
   );
 }

@@ -7,4 +7,5 @@ urlpatterns = [
 
     # Apps
     path("api/accounts/", include("accounts.urls")),
+    path("api/characters/", include("characters.urls")),
 ]

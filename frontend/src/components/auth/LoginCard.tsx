@@ -29,7 +29,7 @@ export default function LoginForm() {
             await mutateAsync(data);
             await queryClient.invalidateQueries({ queryKey: ["me"] });
             await queryClient.prefetchQuery({ queryKey: ["me"], queryFn: fetchCurrentUser });
-            router.push("/menu");
+            router.replace("/menu");
         } catch (err) {
             const msg = err instanceof Error ? err.message : "Unknown error. Please try again.";
             toaster.create({ description: msg, type: "error" });

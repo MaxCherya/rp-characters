@@ -12,8 +12,13 @@ class CharacterListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Same ownership restriction
-        return Character.objects.filter(meta__owner=self.request.user)
+        # Only user's characters, ordered by most recently modified meta
+        return (
+            Character.objects
+            .filter(meta__owner=self.request.user)
+            .select_related("meta")
+            .order_by("-meta__last_modified")
+        )
 
 
 class CharacterDetailView(generics.RetrieveUpdateDestroyAPIView):

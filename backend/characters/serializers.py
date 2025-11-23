@@ -19,6 +19,7 @@ class LocationSerializer(serializers.ModelSerializer):
         fields = [
             "country",
             "state_province",
+            "zip_code",
             "settlement",
             "street",
             "house",

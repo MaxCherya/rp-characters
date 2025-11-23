@@ -20,6 +20,7 @@ class BasicIdentity(models.Model):
 class Location(models.Model):
     country = models.CharField(max_length=255, blank=True)
     state_province = models.CharField(max_length=255, blank=True)
+    zip_code = models.CharField(max_length=255, blank=True)
     settlement = models.CharField(max_length=255, blank=True)
     street = models.CharField(max_length=255, blank=True)
     house = models.CharField(max_length=255, blank=True)

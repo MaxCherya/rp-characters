@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useEffect } from 'react';
 import { Providers } from '../providers';
+import ProtectedNav from '@/components/navs/ProtectedNav';
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -26,6 +27,11 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     if (!user) return null;
 
     return (
-        <Providers>{children}</Providers>
+        <Providers>
+            <div className='flex flex-col gap-7 bg-gray-100'>
+                <ProtectedNav />
+                <main>{children}</main>
+            </div>
+        </Providers>
     )
 }

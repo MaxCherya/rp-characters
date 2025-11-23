@@ -100,3 +100,36 @@ export async function fetchCurrentUser() {
 
     return res.json();
 }
+
+
+
+/**
+ * Logs out the current user by calling the API and clearing auth cookies.
+ *
+ * POST /api/accounts/logout/
+ */
+export const logoutUser = async () => {
+    const csrftoken = getCookie("csrftoken");
+    const res = await fetch(`${baseUrl}/api/accounts/logout/`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrftoken || "",
+        },
+        credentials: "include",
+    });
+
+    if (!res.ok) {
+        const raw = await res.text();
+        let message = "Logout failed";
+        try {
+            const json = raw ? JSON.parse(raw) : null;
+            message = json ? flattenDrfErrors(json) : (raw || message);
+        } catch {
+            message = raw || message;
+        }
+        throw new Error(message);
+    }
+
+    return res.json();
+};

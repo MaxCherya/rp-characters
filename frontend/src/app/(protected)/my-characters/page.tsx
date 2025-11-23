@@ -23,12 +23,11 @@ export default function MyCharacters() {
     });
 
     return (
-        <main className="min-h-screen relative py-10 px-4 bg-gray-100">
-            <VStack gap={8} width="full" maxW="3xl" mx="auto">
+        <main className="min-h-screen relative bg-gray-100">
+            <VStack gap={8} width="full" className="max-w-[95%] lg:max-w-3xl" mx="auto">
 
                 {/* Header */}
-                <HStack justify="space-between" width="full">
-                    <Heading size="lg">My Characters</Heading>
+                <HStack justify="center" width="full">
                     <Button size="sm" onClick={() => router.push('/create-character')}>+ New Character</Button>
                 </HStack>
 

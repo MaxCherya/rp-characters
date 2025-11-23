@@ -92,11 +92,11 @@ export default function CreateCharacter() {
     const isBusy = isSubmitting || isPending;
 
     return (
-        <main className="min-h-screen flex items-center justify-center px-4 py-10 bg-gray-100">
+        <main className="min-h-screen flex items-center justify-center bg-gray-100">
             <Card.Root
-                maxW="3xl"
+                className="max-w-[95%] lg:max-w-3xl !mb-7"
                 width="full"
-                p={6}
+                p={2}
                 borderWidth="1px"
                 borderRadius="md"
                 bg="white"
@@ -182,7 +182,7 @@ export default function CreateCharacter() {
                                     })}
                                     disabled={isBusy || isCountriesLoading || isCountriesError}
                                     aria-invalid={!!errors.location?.country}
-                                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-white"
+                                    className="!block !w-full !rounded-md !border !border-gray-300 !px-3 !py-2 !text-sm !bg-white"
                                 >
                                     <option value="">
                                         {isCountriesLoading

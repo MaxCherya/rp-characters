@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useEffect } from 'react';
+import { Providers } from '../providers';
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -24,5 +25,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
 
     if (!user) return null;
 
-    return <>{children}</>;
+    return (
+        <Providers>{children}</Providers>
+    )
 }

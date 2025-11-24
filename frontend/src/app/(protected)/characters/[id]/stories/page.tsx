@@ -3,10 +3,28 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Story, StoryFormValues } from '@/types/stories';
-import { Button, Card, Heading, HStack, Text, VStack } from '@chakra-ui/react';
-import { fetchStories, createStory, updateStory } from '@/endpoints/stories';
+import {
+    Button,
+    Card,
+    Heading,
+    HStack,
+    Stack,
+    Text,
+    VStack,
+    IconButton,
+} from '@chakra-ui/react';
+import {
+    fetchStories,
+    createStory,
+    updateStory,
+    deleteStory,
+} from '@/endpoints/stories';
 import { CreateStoryModal } from '@/components/stories/CreateStoryModal';
 import { EditStoryModal } from '@/components/stories/EditStoryModal';
+import { FiTrash2 } from 'react-icons/fi';
+import { DeleteStoryModal } from '@/components/stories/DeleteStoryModal';
+import { MdOpenInNew } from "react-icons/md";
+import { GoPencil } from "react-icons/go";
 
 export default function CharacterStoryPage() {
     const params = useParams<{ id: string }>();
@@ -22,6 +40,10 @@ export default function CharacterStoryPage() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [storyToEdit, setStoryToEdit] = useState<Story | null>(null);
+
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [storyToDelete, setStoryToDelete] = useState<Story | null>(null);
 
     useEffect(() => {
         const load = async () => {
@@ -98,6 +120,34 @@ export default function CharacterStoryPage() {
         }
     };
 
+    // Delete story
+    const openDeleteModal = (story: Story) => {
+        setStoryToDelete(story);
+        setIsDeleteModalOpen(true);
+    };
+
+    const closeDeleteModal = () => {
+        if (!isDeleting) {
+            setIsDeleteModalOpen(false);
+            setStoryToDelete(null);
+        }
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!storyToDelete) return;
+        try {
+            setIsDeleting(true);
+            await deleteStory(storyToDelete.id);
+            setStories((prev) => prev.filter((s) => s.id !== storyToDelete.id));
+            setIsDeleteModalOpen(false);
+            setStoryToDelete(null);
+        } catch (err: any) {
+            setError(err.message || 'Failed to delete story');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     return (
         <main className="min-h-screen p-6 flex flex-col items-center">
             <div className="mb-4 w-full max-w-3xl flex justify-end items-center">
@@ -122,8 +172,14 @@ export default function CharacterStoryPage() {
                             className="hover:shadow-md transition cursor-pointer"
                         >
                             <Card.Body>
-                                <HStack justify="space-between" align="start">
-                                    <VStack align="start" gap={1}>
+                                <Stack
+                                    direction={{ base: 'column', md: 'row' }}
+                                    align={{ base: 'stretch', md: 'flex-start' }}
+                                    justify="space-between"
+                                    gap={4}
+                                >
+                                    {/* Left side: text */}
+                                    <VStack align="start" gap={1} flex="1">
                                         <Heading size="md">{story.title}</Heading>
 
                                         {story.description && (
@@ -137,19 +193,36 @@ export default function CharacterStoryPage() {
                                         </Text>
                                     </VStack>
 
-                                    <HStack gap={2}>
-                                        <Button size="sm" variant="outline">
-                                            Open
+                                    {/* Right side: actions */}
+                                    <HStack
+                                        gap={2}
+                                        w={{ base: '100%', md: 'auto' }}
+                                        justify={{ base: 'flex-end', md: 'flex-end' }}
+                                    >
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                        >
+                                            <MdOpenInNew />
                                         </Button>
                                         <Button
                                             size="sm"
                                             variant="outline"
                                             onClick={() => openEditModal(story)}
                                         >
-                                            Edit
+                                            <GoPencil />
                                         </Button>
+                                        <IconButton
+                                            aria-label="Delete story"
+                                            size="sm"
+                                            variant="ghost"
+                                            colorScheme="red"
+                                            onClick={() => openDeleteModal(story)}
+                                        >
+                                            <FiTrash2 />
+                                        </IconButton>
                                     </HStack>
-                                </HStack>
+                                </Stack>
                             </Card.Body>
                         </Card.Root>
                     ))}
@@ -169,6 +242,14 @@ export default function CharacterStoryPage() {
                 story={storyToEdit}
                 onSave={handleEditStorySave}
                 isSubmitting={isEditing}
+            />
+
+            <DeleteStoryModal
+                isOpen={isDeleteModalOpen}
+                onClose={closeDeleteModal}
+                storyTitle={storyToDelete?.title ?? null}
+                onConfirm={handleConfirmDelete}
+                isProcessing={isDeleting}
             />
         </main>
     );

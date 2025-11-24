@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Story, StoryFormValues } from '@/types/stories';
 import {
     Button,
@@ -29,6 +29,7 @@ import { GoPencil } from "react-icons/go";
 export default function CharacterStoryPage() {
     const params = useParams<{ id: string }>();
     const characterId = Number(params.id);
+    const router = useRouter();
 
     const [stories, setStories] = useState<Story[]>([]);
     const [loading, setLoading] = useState(true);
@@ -202,6 +203,7 @@ export default function CharacterStoryPage() {
                                         <Button
                                             size="sm"
                                             variant="outline"
+                                            onClick={() => router.push(`/characters/${characterId}/stories/${story.id}`)}
                                         >
                                             <MdOpenInNew />
                                         </Button>

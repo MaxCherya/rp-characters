@@ -76,11 +76,11 @@ export const EditStoryModal: React.FC<EditStoryModalProps> = ({
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4"
             onClick={handleClose}
         >
             <div
-                className="w-full max-w-md rounded-xl bg-white shadow-xl border border-gray-200 p-6"
+                className="w-full max-w-md rounded-xl bg-white shadow-xl border border-gray-200 p-4 md:p-6 max-h-[90vh] overflow-y-auto"
                 onClick={stopPropagation}
             >
                 {/* Header */}

@@ -7,6 +7,7 @@ import { Providers } from '../providers';
 import ProtectedNav from '@/components/navs/ProtectedNav';
 import '@milkdown/crepe/theme/common/style.css';
 import '@milkdown/crepe/theme/frame.css';
+import './style.css'
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();

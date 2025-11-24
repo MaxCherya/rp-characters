@@ -38,16 +38,13 @@ const StoryEditorInner: React.FC<StoryEditorProps> = ({
                     setMarkdown(md);
                 });
 
-                // removes any <input type="file"> inside this editor root
                 const rootEl = root as HTMLElement | null;
                 if (!rootEl) return;
 
-                // removes existing ones immediately
                 rootEl
                     .querySelectorAll('input[type="file"]')
                     .forEach((input) => input.remove());
 
-                // observes for future ones
                 const observer = new MutationObserver(() => {
                     rootEl
                         .querySelectorAll('input[type="file"]')
@@ -73,13 +70,15 @@ const StoryEditorInner: React.FC<StoryEditorProps> = ({
     };
 
     return (
-        <div className="flex flex-col gap-3">
-            <div className="border rounded-md overflow-hidden min-h-screen bg-white">
+        <div className="flex flex-col gap-3 w-full">
+            <div className="story-editor border rounded-md bg-white overflow-y-auto min-h-[50vh] md:min-h-[70vh]">
                 <Milkdown />
             </div>
 
             <HStack justify="flex-end">
-                <Button onClick={handleSave} colorScheme="blue">{saveLabel}</Button>
+                <Button onClick={handleSave} colorScheme="blue">
+                    {saveLabel}
+                </Button>
             </HStack>
         </div>
     );

@@ -1,0 +1,29 @@
+/* ============================
+   STORY VIEWER
+   ============================ */
+
+/* Make Milkdown take full width */
+.story-viewer .milkdown {
+    max-width: 100%;
+    margin: 0;
+}
+
+/* Add padding (more on the left because of Crepe block menu position) */
+.story-viewer .milkdown .ProseMirror {
+    padding: 0.75rem 1rem 0.75rem 1.75rem;
+}
+
+/* Desktop: more breathing room */
+@media (min-width: 768px) {
+    .story-viewer .milkdown .ProseMirror {
+        padding: 1.5rem 2rem 1.5rem 3rem;
+    }
+}
+
+/* Extra small mobile adjustments */
+@media (max-width: 480px) {
+    .story-viewer .milkdown .ProseMirror {
+        padding-left: 1.25rem;
+        padding-right: 0.75rem;
+    }
+}

@@ -1,18 +1,38 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { fetchCharacter } from "@/endpoints/characters";
-import { Card, Heading, Text } from "@chakra-ui/react";
+import { useParams, useRouter } from "next/navigation";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { deleteCharacter, fetchCharacter } from "@/endpoints/characters";
+import { Button, Card, Heading, Text } from "@chakra-ui/react";
+import { useMemo, useState } from "react";
+import { DeleteConfirmModal } from "@/components/character/DeleteConfirmModal";
 
 export default function CharacterPage() {
     const params = useParams<{ id: string }>();
     const id = Number(params.id);
+    const router = useRouter();
+    const queryClient = useQueryClient();
 
     const { data, isLoading, isError } = useQuery({
         queryKey: ["character", id],
         queryFn: () => fetchCharacter(id),
         enabled: !isNaN(id),
+    });
+
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [confirmationText, setConfirmationText] = useState("");
+
+    const deleteMutation = useMutation({
+        mutationFn: (characterId: number) => deleteCharacter(characterId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["character", id] });
+            router.push("/my-characters");
+        },
+        onError: (error) => {
+            const message =
+                error instanceof Error ? error.message : "Failed to delete character.";
+            alert(message);
+        },
     });
 
     if (isLoading) {
@@ -32,10 +52,40 @@ export default function CharacterPage() {
     }
 
     const { basic_identity, location } = data;
+
     const fullName = [basic_identity.name_family, basic_identity.name_given, basic_identity.name_middle]
         .filter(Boolean)
         .join(" ")
         .trim();
+
+    const normalizedFullName = useMemo(
+        () => fullName.replace(/\s+/g, " ").trim().toLowerCase(),
+        [fullName]
+    );
+
+    const normalizedConfirmation = confirmationText
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLowerCase();
+
+    const isConfirmationValid =
+        !!fullName && normalizedFullName === normalizedConfirmation;
+
+    const openDeleteModal = () => {
+        setConfirmationText("");
+        setIsDeleteModalOpen(true);
+    };
+
+    const closeDeleteModal = () => {
+        if (!deleteMutation.isPending) {
+            setIsDeleteModalOpen(false);
+        }
+    };
+
+    const handleConfirmDelete = () => {
+        if (!isConfirmationValid) return;
+        deleteMutation.mutate(id);
+    };
 
     return (
         <main className="min-h-screen mb-12 px-4">
@@ -109,6 +159,20 @@ export default function CharacterPage() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Danger Zone / Deletion */}
+                        {fullName && (
+                            <div className="pt-8 border-t mt-8">
+                                <Text className="font-semibold text-red-700 uppercase text-sm tracking-wider">Record Deletion</Text>
+                                <Text className="mt-3 text-gray-700">
+                                    Deleting this character will permanently remove the record
+                                    from the registry and all its children. This action cannot be undone.
+                                </Text>
+                                <div className="mt-5 flex justify-end">
+                                    <Button colorScheme="red" variant="outline" onClick={openDeleteModal}>Delete Character</Button>
+                                </div>
+                            </div>
+                        )}
                     </Card.Body>
 
                     <Card.Footer className="bg-gray-100 text-center py-4">
@@ -116,6 +180,18 @@ export default function CharacterPage() {
                     </Card.Footer>
                 </Card.Root>
             </div>
+
+            {/* Confirmation Modal */}
+            <DeleteConfirmModal
+                isOpen={isDeleteModalOpen}
+                onClose={closeDeleteModal}
+                fullName={fullName}
+                confirmationText={confirmationText}
+                setConfirmationText={setConfirmationText}
+                onConfirm={handleConfirmDelete}
+                isProcessing={deleteMutation.isPending}
+                isConfirmationValid={isConfirmationValid}
+            />
         </main>
     );
 }

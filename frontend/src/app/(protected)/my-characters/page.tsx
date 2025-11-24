@@ -81,7 +81,7 @@ export default function MyCharacters() {
                                         )}
                                     </VStack>
 
-                                    <Button variant="outline" size="sm">View</Button>
+                                    <Button variant="outline" onClick={() => router.push(`/characters/${char.id}`)} size="sm">View</Button>
                                 </HStack>
                             </Card.Body>
                         </Card.Root>

@@ -22,6 +22,6 @@ export type CharacterFormValues = {
 
 export type Character = {
   id: number;
-  basic_identity: BasicIdentityPayload | null;
-  location: LocationPayload | null;
+  basic_identity: BasicIdentityPayload;
+  location: LocationPayload;
 };

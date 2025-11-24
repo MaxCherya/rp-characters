@@ -76,7 +76,7 @@ export default function StoryPage() {
 
     return (
         <main className="min-h-screen px-6 flex justify-center">
-            <div className="w-full max-w-4xl space-y-6">
+            <div className="w-full max-w-4xl space-y-6 mb-7">
 
                 <div className='w-full flex flex-row justify-between'>
                     <h1 className="text-2xl font-semibold">{story.title}</h1>

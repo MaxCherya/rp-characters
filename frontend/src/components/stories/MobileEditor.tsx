@@ -20,13 +20,13 @@ export const MobileMarkdownEditor: React.FC<MobileMarkdownEditorProps> = ({
             <textarea
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
-                className="w-full min-h-[60vh] rounded-md border border-gray-300 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full min-h-screen bg-white p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Write your story in Markdown..."
             />
             <div className="flex justify-end">
                 <button
                     onClick={handleSave}
-                    className="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700 transition"
+                    className="px-4 py-2 text-sm rounded-md bg-black text-white hover:bg-grey-700 transition"
                 >
                     {saveLabel}
                 </button>

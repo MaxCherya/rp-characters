@@ -71,7 +71,7 @@ const StoryEditorInner: React.FC<StoryEditorProps> = ({
 
     return (
         <div className="flex flex-col gap-3 w-full">
-            <div className="story-editor border rounded-md bg-white overflow-y-auto min-h-[50vh] md:min-h-[70vh]">
+            <div className="story-editor min-h-screen bg-white overflow-y-auto">
                 <Milkdown />
             </div>
 

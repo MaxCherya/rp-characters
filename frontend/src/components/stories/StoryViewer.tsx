@@ -34,7 +34,7 @@ const StoryViewerInner: React.FC<StoryViewerProps> = ({ markdown }) => {
     );
 
     return (
-        <div className="w-full border bg-white rounded-md overflow-auto">
+        <div className="w-full min-h-screen bg-white overflow-auto">
             <div className="story-viewer">
                 <Milkdown />
             </div>

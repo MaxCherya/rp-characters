@@ -47,7 +47,6 @@ export default function ProtectedNav() {
         try {
             await logoutMutate();
         } catch (e) {
-            // optional: add toaster here later
             console.error(e);
         }
     };
@@ -135,9 +134,7 @@ export default function ProtectedNav() {
                 justify="space-between"
             >
                 {/* Logo */}
-                <Text fontSize="2xl" fontWeight="bold">
-                    RP Characters
-                </Text>
+                <Text className="cursor-pointer" fontSize="2xl" onClick={() => router.push('/menu')} fontWeight="bold">RP Characters</Text>
 
                 {/* Desktop Nav */}
                 <HStack gap={8} display={{ base: "none", md: "flex" }}>

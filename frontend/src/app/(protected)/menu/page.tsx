@@ -19,7 +19,7 @@ export default function Menu() {
                     <Heading size="lg">Welcome, {user.username}</Heading>
                     <ButtonGroup className="flex flex-col">
                         <Button onClick={() => router.push('/my-characters')} variant='solid' className="w-full">My Characters <RiArrowRightLine /></Button>
-                        <Button colorPalette='red' variant='solid' className="w-full">Logout</Button>
+                        <Button onClick={() => router.push('/create-character')} variant='solid' className="w-full">Create a New Character <RiArrowRightLine /></Button>
                     </ButtonGroup>
                 </VStack>
             </AbsoluteCenter>

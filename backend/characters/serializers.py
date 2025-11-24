@@ -62,3 +62,26 @@ class CharacterUploadSerializer(serializers.ModelSerializer):
             meta=meta
         )
         return character
+
+    def update(self, instance, validated_data):
+        basic_data = validated_data.pop("basic_identity", None)
+        location_data = validated_data.pop("location", None)
+
+        if basic_data is not None:
+            for attr, value in basic_data.items():
+                setattr(instance.basic_identity, attr, value)
+            instance.basic_identity.save()
+
+        if location_data is not None:
+            for attr, value in location_data.items():
+                setattr(instance.location, attr, value)
+            instance.location.save()
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        if hasattr(instance, "meta") and instance.meta is not None:
+            instance.meta.save()
+
+        instance.save()
+        return instance

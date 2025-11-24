@@ -104,7 +104,7 @@ export const updateCharacter = async (
   const csrftoken = getCookie("csrftoken");
 
   const res = await apiFetch(`${baseUrl}/api/characters/${id}/`, {
-    method: "PUT", // or "PATCH" if your view supports it
+    method: "PUT",
     headers: {
       "Content-Type": "application/json",
       "X-CSRFToken": csrftoken || "",

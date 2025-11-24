@@ -2,10 +2,14 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { deleteCharacter, fetchCharacter } from "@/endpoints/characters";
+import { deleteCharacter, fetchCharacter, updateCharacter } from "@/endpoints/characters";
 import { Button, Card, Heading, Text } from "@chakra-ui/react";
 import { useMemo, useState } from "react";
 import { DeleteConfirmModal } from "@/components/character/DeleteConfirmModal";
+import { EditCharacterModal } from "@/components/character/EditCharacterModal";
+import { Character, CharacterFormValues } from "@/types/characters";
+import { toaster } from "@/components/ui/toaster";
+import { FiEdit3 } from "react-icons/fi";
 
 export default function CharacterPage() {
     const params = useParams<{ id: string }>();
@@ -21,6 +25,7 @@ export default function CharacterPage() {
 
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [confirmationText, setConfirmationText] = useState("");
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     const deleteMutation = useMutation({
         mutationFn: (characterId: number) => deleteCharacter(characterId),
@@ -32,6 +37,24 @@ export default function CharacterPage() {
             const message =
                 error instanceof Error ? error.message : "Failed to delete character.";
             alert(message);
+        },
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: (values: CharacterFormValues) => updateCharacter(id, values),
+        onSuccess: (updated) => {
+            queryClient.setQueryData<Character>(["character", id], updated);
+            queryClient.invalidateQueries({ queryKey: ["characters"] });
+            toaster.create({
+                description: "Character updated successfully.",
+                type: "success",
+            });
+            setIsEditModalOpen(false);
+        },
+        onError: (error) => {
+            const message =
+                error instanceof Error ? error.message : "Failed to update character.";
+            toaster.create({ description: message, type: "error" });
         },
     });
 
@@ -87,6 +110,10 @@ export default function CharacterPage() {
         deleteMutation.mutate(id);
     };
 
+    const openEditModal = () => {
+        setIsEditModalOpen(true);
+    };
+
     return (
         <main className="min-h-screen mb-12 px-4">
             <div className="max-w-4xl mx-auto">
@@ -100,6 +127,14 @@ export default function CharacterPage() {
                         {/* Full Name */}
                         <div className="text-center border-b pb-6">
                             <Text className="text-3xl font-bold">{fullName || "NAME NOT SPECIFIED"}</Text>
+                            <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={openEditModal}
+                                className="!text-gray-700"
+                            >
+                                <FiEdit3 /> Edit
+                            </Button>
                         </div>
 
                         {/* Basic Identity */}
@@ -129,7 +164,7 @@ export default function CharacterPage() {
 
                         {/* Location */}
                         <div className="space-y-4 pt-6 border-t">
-                            <Text className="font-semibold text-gray-700 uppercase text-sm tracking-wider">Registered Address</Text>
+                            <Text className="font-semibold text-gray-700 uppercase text-sm tracking-wider">Location</Text>
                             <div className="space-y-3 text-gray-800">
                                 <div className="flex justify-between">
                                     <span className="text-gray-600">Country</span>
@@ -191,6 +226,15 @@ export default function CharacterPage() {
                 onConfirm={handleConfirmDelete}
                 isProcessing={deleteMutation.isPending}
                 isConfirmationValid={isConfirmationValid}
+            />
+
+            {/* Edit modal */}
+            <EditCharacterModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                character={data}
+                onSave={(values) => updateMutation.mutate(values)}
+                isProcessing={updateMutation.isPending}
             />
         </main>
     );

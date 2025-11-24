@@ -5,6 +5,8 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useEffect } from 'react';
 import { Providers } from '../providers';
 import ProtectedNav from '@/components/navs/ProtectedNav';
+import '@milkdown/crepe/theme/common/style.css';
+import '@milkdown/crepe/theme/frame.css';
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();

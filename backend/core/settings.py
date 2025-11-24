@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     
     'accounts',
     'characters',
+    'stories',
 ]
 
 MIDDLEWARE = [

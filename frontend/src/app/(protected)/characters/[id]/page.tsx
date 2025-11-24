@@ -195,6 +195,29 @@ export default function CharacterPage() {
                             </div>
                         </div>
 
+                        {/* Character Features / Workspace */}
+                        <div className="pt-6 border-t">
+                            <Text className="font-semibold text-gray-700 uppercase text-sm tracking-wider">
+                                Character Workspace
+                            </Text>
+                            <Text className="mt-2 text-gray-700 text-sm">
+                                Manage extended information and creative content linked to this character.
+                            </Text>
+
+                            <div className="mt-4 flex flex-wrap gap-3">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => router.push(`/characters/${id}/stories`)}
+                                >
+                                    Stories
+                                </Button>
+
+                                {/* future stuff */}
+
+                            </div>
+                        </div>
+
+
                         {/* Danger Zone / Deletion */}
                         {fullName && (
                             <div className="pt-8 border-t mt-8">

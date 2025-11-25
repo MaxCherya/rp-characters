@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'accounts',
     'characters',
     'stories',
+    'events',
 ]
 
 MIDDLEWARE = [

@@ -10,15 +10,20 @@ import {
 } from "@/types/events";
 
 /**
- * Fetch list of events.
+ * Fetch list of events for a given character.
  *
- * GET /api/events/
+ * GET /api/events/characters/:character_id/
  */
-export const fetchEvents = async (): Promise<Event[]> => {
-  const res = await apiFetch(`${baseUrl}/api/events/`, {
-    method: "GET",
-    credentials: "include",
-  });
+export const fetchEvents = async (
+  characterId: number,
+): Promise<Event[]> => {
+  const res = await apiFetch(
+    `${baseUrl}/api/events/characters/${characterId}/`,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
 
   if (!res.ok) {
     const raw = await res.text();
@@ -36,15 +41,21 @@ export const fetchEvents = async (): Promise<Event[]> => {
 };
 
 /**
- * Fetch a single event by id.
+ * Fetch a single event by id for a given character.
  *
- * GET /api/events/:id/
+ * GET /api/events/characters/:character_id/:id/
  */
-export const fetchEvent = async (id: number): Promise<Event> => {
-  const res = await apiFetch(`${baseUrl}/api/events/${id}/`, {
-    method: "GET",
-    credentials: "include",
-  });
+export const fetchEvent = async (
+  characterId: number,
+  id: number,
+): Promise<Event> => {
+  const res = await apiFetch(
+    `${baseUrl}/api/events/characters/${characterId}/${id}/`,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
 
   if (!res.ok) {
     const raw = await res.text();
@@ -62,24 +73,28 @@ export const fetchEvent = async (id: number): Promise<Event> => {
 };
 
 /**
- * Create a new event.
+ * Create a new event for a given character.
  *
- * POST /api/events/
+ * POST /api/events/characters/:character_id/
  */
 export const createEvent = async (
+  characterId: number,
   data: EventFormValues,
 ): Promise<Event> => {
   const csrftoken = getCookie("csrftoken");
 
-  const res = await apiFetch(`${baseUrl}/api/events/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRFToken": csrftoken || "",
+  const res = await apiFetch(
+    `${baseUrl}/api/events/characters/${characterId}/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrftoken || "",
+      },
+      body: JSON.stringify(data),
+      credentials: "include",
     },
-    body: JSON.stringify(data),
-    credentials: "include",
-  });
+  );
 
   if (!res.ok) {
     const raw = await res.text();
@@ -99,23 +114,27 @@ export const createEvent = async (
 /**
  * Update an existing event.
  *
- * PUT /api/events/:id/
+ * PUT /api/events/characters/:character_id/:id/
  */
 export const updateEvent = async (
+  characterId: number,
   id: number,
   data: EventFormValues,
 ): Promise<Event> => {
   const csrftoken = getCookie("csrftoken");
 
-  const res = await apiFetch(`${baseUrl}/api/events/${id}/`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRFToken": csrftoken || "",
+  const res = await apiFetch(
+    `${baseUrl}/api/events/characters/${characterId}/${id}/`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrftoken || "",
+      },
+      body: JSON.stringify(data),
+      credentials: "include",
     },
-    body: JSON.stringify(data),
-    credentials: "include",
-  });
+  );
 
   if (!res.ok) {
     const raw = await res.text();
@@ -135,18 +154,24 @@ export const updateEvent = async (
 /**
  * Delete an event.
  *
- * DELETE /api/events/:id/
+ * DELETE /api/events/characters/:character_id/:id/
  */
-export const deleteEvent = async (id: number): Promise<void> => {
+export const deleteEvent = async (
+  characterId: number,
+  id: number,
+): Promise<void> => {
   const csrftoken = getCookie("csrftoken");
 
-  const res = await apiFetch(`${baseUrl}/api/events/${id}/`, {
-    method: "DELETE",
-    headers: {
-      "X-CSRFToken": csrftoken || "",
+  const res = await apiFetch(
+    `${baseUrl}/api/events/characters/${characterId}/${id}/`,
+    {
+      method: "DELETE",
+      headers: {
+        "X-CSRFToken": csrftoken || "",
+      },
+      credentials: "include",
     },
-    credentials: "include",
-  });
+  );
 
   if (!res.ok) {
     const raw = await res.text();
@@ -166,15 +191,16 @@ export const deleteEvent = async (id: number): Promise<void> => {
 /* -------------------------------------------------- */
 
 /**
- * Fetch scenarios for a given event.
+ * Fetch scenarios for a given event & character.
  *
- * GET /api/events/:event_id/scenarios/
+ * GET /api/events/characters/:character_id/:event_id/scenarios/
  */
 export const fetchEventScenarios = async (
+  characterId: number,
   eventId: number,
 ): Promise<Scenario[]> => {
   const res = await apiFetch(
-    `${baseUrl}/api/events/${eventId}/scenarios/`,
+    `${baseUrl}/api/events/characters/${characterId}/${eventId}/scenarios/`,
     {
       method: "GET",
       credentials: "include",
@@ -197,18 +223,19 @@ export const fetchEventScenarios = async (
 };
 
 /**
- * Create a new scenario for a given event.
+ * Create a new scenario for a given event & character.
  *
- * POST /api/events/:event_id/scenarios/
+ * POST /api/events/characters/:character_id/:event_id/scenarios/
  */
 export const createEventScenario = async (
+  characterId: number,
   eventId: number,
   data: ScenarioFormValues,
 ): Promise<Scenario> => {
   const csrftoken = getCookie("csrftoken");
 
   const res = await apiFetch(
-    `${baseUrl}/api/events/${eventId}/scenarios/`,
+    `${baseUrl}/api/events/characters/${characterId}/${eventId}/scenarios/`,
     {
       method: "POST",
       headers: {

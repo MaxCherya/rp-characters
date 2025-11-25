@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import Event, Scenario
-from characters.models import Character
 
 
 class ScenarioSerializer(serializers.ModelSerializer):
@@ -28,9 +27,7 @@ class ScenarioSerializer(serializers.ModelSerializer):
 
 class EventSerializer(serializers.ModelSerializer):
     scenarios = ScenarioSerializer(many=True, read_only=True)
-
     owner = serializers.ReadOnlyField(source="owner.username")
-
     character = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:

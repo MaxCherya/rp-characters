@@ -1,14 +1,15 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { Story } from '@/types/stories';
-import { fetchStory, updateStory } from '@/endpoints/stories';
-import { StoryEditor } from '@/components/stories/StoryEditor';
-import { StoryViewer } from '@/components/stories/StoryViewer';
-import { Button, HStack, Spinner, Text } from '@chakra-ui/react';
-import { MobileMarkdownEditor } from '@/components/stories/MobileEditor';
-import { useIsSmallScreen } from '@/hooks/useIsSmallScreen';
+import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Story } from "@/types/stories";
+import { fetchStory, updateStory } from "@/endpoints/stories";
+import { StoryEditor } from "@/components/stories/StoryEditor";
+import { StoryViewer } from "@/components/stories/StoryViewer";
+import { Button, HStack, Spinner, Text, Box } from "@chakra-ui/react";
+import { MobileMarkdownEditor } from "@/components/stories/MobileEditor";
+import { useIsSmallScreen } from "@/hooks/useIsSmallScreen";
 
 export default function StoryPage() {
     const params = useParams<{ id: string; storyId: string }>();
@@ -17,48 +18,56 @@ export default function StoryPage() {
 
     const router = useRouter();
     const isSmall = useIsSmallScreen();
+    const queryClient = useQueryClient();
 
-    const [story, setStory] = useState<Story | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [actionError, setActionError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const load = async () => {
-            try {
-                const data = await fetchStory(storyId);
-                setStory(data);
-            } catch (err: any) {
-                setError(err.message || 'Failed to load story');
-            } finally {
-                setLoading(false);
+    // ---------- Query: load story ----------
+
+    const {
+        data: story,
+        isLoading,
+        isError,
+        error,
+    } = useQuery<Story>({
+        queryKey: ["story", storyId],
+        queryFn: () => fetchStory(storyId),
+        enabled: !Number.isNaN(storyId),
+    });
+
+    // ---------- Mutation: save story ----------
+
+    const updateMutation = useMutation({
+        mutationFn: (markdown: string) => {
+            if (!story) {
+                throw new Error("No story loaded");
             }
-        };
-
-        load();
-    }, [storyId]);
-
-    const handleSave = async (markdown: string) => {
-        if (!story) return;
-
-        try {
-            setSaving(true);
-            const updated = await updateStory(story.id, {
+            return updateStory(story.id, {
                 title: story.title,
-                description: story.description ?? '',
+                description: story.description ?? "",
                 markdown,
             });
-            setStory(updated);
+        },
+        onSuccess: (updated) => {
+            // update cache
+            queryClient.setQueryData<Story>(["story", storyId], updated);
             setIsEditing(false);
-        } catch (err: any) {
-            setError(err.message || 'Failed to save story');
-        } finally {
-            setSaving(false);
-        }
+            setActionError(null);
+        },
+        onError: (err: any) => {
+            setActionError(err?.message || "Failed to save story");
+        },
+    });
+
+    const handleSave = (markdown: string) => {
+        setActionError(null);
+        updateMutation.mutate(markdown);
     };
 
-    if (loading) {
+    // ---------- Loading / Error states ----------
+
+    if (isLoading) {
         return (
             <main className="min-h-screen flex items-center justify-center">
                 <Spinner size="lg" />
@@ -66,23 +75,31 @@ export default function StoryPage() {
         );
     }
 
-    if (error || !story) {
+    const queryErrorMessage =
+        (error as any)?.message || (isError ? "Failed to load story" : null);
+
+    if (queryErrorMessage || !story) {
         return (
             <main className="min-h-screen flex items-center justify-center">
-                <Text color="red.500">{error || 'Story not found'}</Text>
+                <Text color="red.500">{queryErrorMessage || "Story not found"}</Text>
             </main>
         );
     }
 
+    const saving = updateMutation.isPending;
+
     return (
         <main className="min-h-screen px-6 flex justify-center">
             <div className="w-full max-w-4xl space-y-6 mb-7">
+                {/* Top bar */}
+                <div className="w-full flex flex-row items-start justify-between gap-4">
+                    <div className="flex-1">
+                        <h1 className="text-2xl font-semibold">{story.title}</h1>
+                        {story.description && (
+                            <p className="text-gray-600">{story.description}</p>
+                        )}
+                    </div>
 
-                <div className='w-full flex flex-row justify-between'>
-                    <h1 className="text-2xl font-semibold">{story.title}</h1>
-                    {story.description && (
-                        <p className="text-gray-600">{story.description}</p>
-                    )}
                     {!isEditing ? (
                         <Button size="sm" onClick={() => setIsEditing(true)}>
                             Edit
@@ -99,23 +116,37 @@ export default function StoryPage() {
                     )}
                 </div>
 
+                {/* Action error (save) */}
+                {actionError && (
+                    <Box
+                        bg="white"
+                        p={3}
+                        borderRadius="md"
+                        borderWidth="1px"
+                        borderColor="red.300"
+                    >
+                        <Text color="red.500" fontSize="sm">
+                            {actionError}
+                        </Text>
+                    </Box>
+                )}
+
                 {/* VIEW OR EDIT */}
                 {!isEditing ? (
-                    <StoryViewer markdown={story.markdown ?? ''} />
+                    <StoryViewer markdown={story.markdown ?? ""} />
                 ) : isSmall ? (
                     <MobileMarkdownEditor
-                        initialMarkdown={story.markdown ?? ''}
+                        initialMarkdown={story.markdown ?? ""}
                         onSave={handleSave}
-                        saveLabel={saving ? 'Saving...' : 'Save story'}
+                        saveLabel={saving ? "Saving..." : "Save story"}
                     />
                 ) : (
                     <StoryEditor
-                        initialMarkdown={story.markdown ?? ''}
+                        initialMarkdown={story.markdown ?? ""}
                         onSave={handleSave}
-                        saveLabel={saving ? 'Saving...' : 'Save story'}
+                        saveLabel={saving ? "Saving..." : "Save story"}
                     />
                 )}
-
             </div>
         </main>
     );

@@ -25,5 +25,9 @@ export type EventFormValues = {
 
 export type Event = EventFormValues & {
   id: number;
+  character: number;
+  owner: string | null;
+  created_at: string;
+  last_modified: string;
   scenarios: Scenario[];
 };

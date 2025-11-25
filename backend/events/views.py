@@ -34,10 +34,10 @@ class EventListCreateView(generics.ListCreateAPIView):
         user = self.request.user
         character_id = self.kwargs.get("character_id")
 
+        # Character has no `user` field – just filter by pk
         character = get_object_or_404(
             Character,
             pk=character_id,
-            user=user,
         )
 
         serializer.save(

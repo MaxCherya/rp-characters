@@ -212,7 +212,12 @@ export default function CharacterPage() {
                                     Stories
                                 </Button>
 
-                                {/* future stuff */}
+                                <Button
+                                    variant="outline"
+                                    onClick={() => router.push(`/characters/${id}/events`)}
+                                >
+                                    Events
+                                </Button>
 
                             </div>
                         </div>

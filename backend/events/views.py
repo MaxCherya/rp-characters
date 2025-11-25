@@ -3,59 +3,126 @@ from django.shortcuts import get_object_or_404
 
 from .models import Event, Scenario
 from .serializers import EventSerializer, ScenarioSerializer
+from characters.models import Character
 
 
 # ---------- EVENT VIEWS ----------
 
+
 class EventListCreateView(generics.ListCreateAPIView):
     """
-    GET /events/          -> list events
-    POST /events/         -> create event
+    GET  /api/events/characters/<character_id>/
+    POST /api/events/characters/<character_id>/
     """
-    queryset = Event.objects.all().order_by("id")
     serializer_class = EventSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        user = self.request.user
+        character_id = self.kwargs.get("character_id")
+
+        if not user.is_authenticated:
+            return Event.objects.none()
+
+        return (
+            Event.objects
+            .filter(owner=user, character_id=character_id)
+            .order_by("id")
+        )
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        character_id = self.kwargs.get("character_id")
+
+        character = get_object_or_404(
+            Character,
+            pk=character_id,
+            user=user,
+        )
+
+        serializer.save(
+            owner=user,
+            character=character,
+        )
 
 
 class EventDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
-    GET    /events/<id>/  -> retrieve
-    PUT    /events/<id>/  -> update
-    PATCH  /events/<id>/  -> partial update
-    DELETE /events/<id>/  -> delete
+    GET    /api/events/characters/<character_id>/<id>/
+    PUT    /api/events/characters/<character_id>/<id>/
+    PATCH  /api/events/characters/<character_id>/<id>/
+    DELETE /api/events/characters/<character_id>/<id>/
     """
-    queryset = Event.objects.all()
     serializer_class = EventSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        user = self.request.user
+        character_id = self.kwargs.get("character_id")
+
+        if not user.is_authenticated:
+            return Event.objects.none()
+
+        return Event.objects.filter(
+            owner=user,
+            character_id=character_id,
+        )
 
 
 # ---------- SCENARIO VIEWS ----------
 
+
 class ScenarioListCreateView(generics.ListCreateAPIView):
     """
-    GET  /events/<event_id>/scenarios/   -> list scenarios for event
-    POST /events/<event_id>/scenarios/   -> create scenario for event
+    GET  /api/events/characters/<character_id>/<event_id>/scenarios/
+    POST /api/events/characters/<character_id>/<event_id>/scenarios/
     """
     serializer_class = ScenarioSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
+        user = self.request.user
+        character_id = self.kwargs.get("character_id")
         event_id = self.kwargs.get("event_id")
-        return Scenario.objects.filter(event_id=event_id).order_by("id")
+
+        if not user.is_authenticated:
+            return Scenario.objects.none()
+
+        return Scenario.objects.filter(
+            event__id=event_id,
+            event__character_id=character_id,
+            event__owner=user,
+        ).order_by("id")
 
     def perform_create(self, serializer):
+        user = self.request.user
+        character_id = self.kwargs.get("character_id")
         event_id = self.kwargs.get("event_id")
-        event = get_object_or_404(Event, pk=event_id)
+
+        event = get_object_or_404(
+            Event,
+            pk=event_id,
+            character_id=character_id,
+            owner=user,
+        )
+
         serializer.save(event=event)
 
 
 class ScenarioDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
-    GET    /scenarios/<id>/  -> retrieve
-    PUT    /scenarios/<id>/  -> update
-    PATCH  /scenarios/<id>/  -> partial update
-    DELETE /scenarios/<id>/  -> delete
+    GET    /api/events/scenarios/<id>/
+    PUT    /api/events/scenarios/<id>/
+    PATCH  /api/events/scenarios/<id>/
+    DELETE /api/events/scenarios/<id>/
     """
-    queryset = Scenario.objects.all()
     serializer_class = ScenarioSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if not user.is_authenticated:
+            return Scenario.objects.none()
+
+        return Scenario.objects.filter(event__owner=user)

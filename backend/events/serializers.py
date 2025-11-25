@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Event, Scenario
+from characters.models import Character
 
 
 class ScenarioSerializer(serializers.ModelSerializer):
@@ -20,10 +21,17 @@ class ScenarioSerializer(serializers.ModelSerializer):
             "is_terminal",
             "children",
         ]
+        extra_kwargs = {
+            "event": {"read_only": True},
+        }
 
 
 class EventSerializer(serializers.ModelSerializer):
     scenarios = ScenarioSerializer(many=True, read_only=True)
+
+    owner = serializers.ReadOnlyField(source="owner.username")
+
+    character = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Event
@@ -32,5 +40,15 @@ class EventSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "chance_to_trigger",
+            "character",
+            "owner",
+            "created_at",
+            "last_modified",
             "scenarios",
+        ]
+        read_only_fields = [
+            "owner",
+            "character",
+            "created_at",
+            "last_modified",
         ]

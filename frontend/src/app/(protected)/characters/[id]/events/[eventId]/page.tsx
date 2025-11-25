@@ -151,36 +151,41 @@ export default function EventPage() {
                 {/* Scenarios Section */}
                 <Box className="mt-6">
                     <Text fontSize="xl" fontWeight="semibold" mb={4}>
-                        Scenarios ({event.scenarios.length})
+                        Root scenarios (
+                        {event.scenarios.filter((s) => s.parent === null).length})
                     </Text>
 
-                    {event.scenarios.length === 0 ? (
-                        <Text color="gray.500">No scenarios yet.</Text>
+                    {event.scenarios.filter((s) => s.parent === null).length === 0 ? (
+                        <Text color="gray.500">
+                            No root scenarios yet. Create one using the button below.
+                        </Text>
                     ) : (
                         <Stack gap={3}>
-                            {event.scenarios.map((s) => (
-                                <Box
-                                    key={s.id}
-                                    p={4}
-                                    borderWidth="1px"
-                                    borderRadius="md"
-                                    bg="white"
-                                    className="hover:shadow transition cursor-pointer"
-                                    onClick={() =>
-                                        router.push(
-                                            `/characters/${characterId}/events/${eventId}/scenarios/${s.id}`,
-                                        )
-                                    }
-                                >
-                                    <Text fontSize="md" fontWeight="medium">
-                                        {s.title}
-                                    </Text>
-                                    <Text fontSize="sm" color="gray.600">
-                                        Weight: {s.weight} │{" "}
-                                        {s.is_terminal ? "Terminal" : "Continues"}
-                                    </Text>
-                                </Box>
-                            ))}
+                            {event.scenarios
+                                .filter((s) => s.parent === null)
+                                .map((s) => (
+                                    <Box
+                                        key={s.id}
+                                        p={4}
+                                        borderWidth="1px"
+                                        borderRadius="md"
+                                        bg="white"
+                                        className="hover:shadow transition cursor-pointer"
+                                        onClick={() =>
+                                            router.push(
+                                                `/characters/${characterId}/events/${eventId}/scenarios/${s.id}`,
+                                            )
+                                        }
+                                    >
+                                        <Text fontSize="md" fontWeight="medium">
+                                            {s.title}
+                                        </Text>
+                                        <Text fontSize="sm" color="gray.600">
+                                            Weight: {s.weight} │{" "}
+                                            {s.is_terminal ? "Terminal" : "Continues"}
+                                        </Text>
+                                    </Box>
+                                ))}
                         </Stack>
                     )}
                 </Box>

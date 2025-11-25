@@ -1,3 +1,8 @@
+export type ScenarioChild = {
+  id: number;
+  title: string;
+};
+
 export type Scenario = {
   id: number;
   event: number;
@@ -6,7 +11,7 @@ export type Scenario = {
   description: string;
   weight: number;
   is_terminal: boolean;
-  children: number[];
+  children: ScenarioChild[];
 };
 
 export type ScenarioFormValues = {

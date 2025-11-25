@@ -2,11 +2,14 @@ from rest_framework import serializers
 from .models import Event, Scenario
 
 
+class ChildScenarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Scenario
+        fields = ["id", "title"]
+
+
 class ScenarioSerializer(serializers.ModelSerializer):
-    children = serializers.PrimaryKeyRelatedField(
-        many=True,
-        read_only=True,
-    )
+    children = ChildScenarioSerializer(many=True, read_only=True)
 
     class Meta:
         model = Scenario

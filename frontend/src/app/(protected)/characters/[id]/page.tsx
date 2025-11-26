@@ -10,6 +10,7 @@ import { EditCharacterModal } from "@/components/character/EditCharacterModal";
 import { Character, CharacterFormValues } from "@/types/characters";
 import { toaster } from "@/components/ui/toaster";
 import { FiEdit3 } from "react-icons/fi";
+import { FullScreenLoader } from "@/components/ui/fullScreenLoader";
 
 export default function CharacterPage() {
     const params = useParams<{ id: string }>();
@@ -60,9 +61,7 @@ export default function CharacterPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <p className="text-lg text-gray-600">Loading character...</p>
-            </div>
+            <FullScreenLoader />
         );
     }
 

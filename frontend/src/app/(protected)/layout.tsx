@@ -8,6 +8,7 @@ import ProtectedNav from '@/components/navs/ProtectedNav';
 import '@milkdown/crepe/theme/common/style.css';
 import '@milkdown/crepe/theme/frame.css';
 import './style.css'
+import { FullScreenLoader } from '@/components/ui/fullScreenLoader';
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -21,9 +22,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
 
     if (isLoading) {
         return (
-            <div className="centered-display h-screen">
-                <p>Checking session...</p>
-            </div>
+            <FullScreenLoader />
         );
     }
 

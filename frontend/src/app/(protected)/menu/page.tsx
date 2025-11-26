@@ -1,5 +1,6 @@
 'use client'
 
+import { FullScreenLoader } from "@/components/ui/fullScreenLoader";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { AbsoluteCenter, Button, ButtonGroup, Heading, VStack } from "@chakra-ui/react"
 import { useRouter } from "next/navigation";
@@ -9,7 +10,7 @@ export default function Menu() {
     const { data: user, isLoading } = useCurrentUser();
     const router = useRouter();
 
-    if (isLoading) return <p>Loading...</p>;
+    if (isLoading) return <FullScreenLoader />;
     if (!user) return <p>You’re not logged in</p>;
 
     return (

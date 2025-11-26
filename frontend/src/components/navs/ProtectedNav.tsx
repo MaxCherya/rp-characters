@@ -40,7 +40,7 @@ export default function ProtectedNav() {
         mutationFn: logoutUser,
         onSuccess: () => {
             clearUser();
-            router.push("/auth");
+            router.push("/");
         },
     });
 

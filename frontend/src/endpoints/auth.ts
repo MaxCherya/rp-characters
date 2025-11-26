@@ -2,7 +2,17 @@ import { apiFetch } from "@/lib/endpoints/apiFetch";
 import { baseUrl } from "@/lib/endpoints/constants";
 import { getCookie } from "@/lib/endpoints/cookies";
 import { flattenDrfErrors } from "@/lib/endpoints/flatterDrfErrors";
-import { LoginFormValues, RegistrationFormValues } from "@/types/auth";
+import { LoginFormValues, RegistrationFormValues, ToggleTwoFARequest, TwoFAStatus } from "@/types/auth";
+
+export class LoginError extends Error {
+  twoFARequired: boolean;
+
+  constructor(message: string, twoFARequired: boolean = false) {
+    super(message);
+    this.name = "LoginError";
+    this.twoFARequired = twoFARequired;
+  }
+}
 
 /**
  * Sends a registration request to the API to create a new user.
@@ -47,33 +57,45 @@ export const registerUser = async (data: RegistrationFormValues) => {
  * @throws Error if the login fails or the server returns a non-OK response.
  */
 export const loginUser = async (data: LoginFormValues) => {
-    const csrftoken = getCookie("csrftoken");
-    const res = await fetch(`${baseUrl}/api/accounts/login/`, {
-        method: 'POST',
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": csrftoken || ""
-        },
-        body: JSON.stringify(data),
-        credentials: "include",
-    });
+  const csrftoken = getCookie("csrftoken");
 
-    if (!res.ok) {
-        const raw = await res.text();
-        let message = "Login failed";
-        try {
-            const json = raw ? JSON.parse(raw) : null;
-            message = json ? flattenDrfErrors(json) : (raw || message);
-        } catch {
-            message = raw || message;
+  const res = await fetch(`${baseUrl}/api/accounts/login/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": csrftoken || "",
+    },
+    body: JSON.stringify(data),
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const raw = await res.text();
+    let message = "Login failed";
+    let twoFARequired = false;
+
+    try {
+      const json = raw ? JSON.parse(raw) : null;
+
+      if (json) {
+        twoFARequired = !!json["2fa_required"];
+        if (typeof json.detail === "string") {
+          message = json.detail || message;
+        } else {
+          message = flattenDrfErrors(json) || raw || message;
         }
-        throw new Error(message);
+      } else {
+        message = raw || message;
+      }
+    } catch {
+      message = raw || message;
     }
 
-    return res.json();
-}
+    throw new LoginError(message, twoFARequired);
+  }
 
-
+  return res.json();
+};
 
 
 /**
@@ -133,3 +155,62 @@ export const logoutUser = async () => {
 
     return res.json();
 };
+
+/**
+ * GET /api/accounts/2fa/
+ */
+export async function fetchTwoFAStatus(): Promise<TwoFAStatus> {
+  const res = await apiFetch(`${baseUrl}/api/accounts/2fa/`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const raw = await res.text();
+    let message = "Failed to fetch 2FA status";
+    try {
+      const json = raw ? JSON.parse(raw) : null;
+      message = json ? flattenDrfErrors(json) : raw || message;
+    } catch {
+      message = raw || message;
+    }
+    throw new Error(message);
+  }
+
+  return res.json();
+}
+
+/**
+ * POST /api/accounts/2fa/
+ * Body: { enable: boolean, otp_code: string }
+ */
+export async function toggleTwoFA(payload: {
+  enable: boolean;
+  otp_code: string;
+}): Promise<{ ok: boolean; is_enabled: boolean }> {
+  const csrftoken = getCookie("csrftoken");
+
+  const res = await apiFetch(`${baseUrl}/api/accounts/2fa/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": csrftoken || "",
+    },
+    body: JSON.stringify(payload),
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const raw = await res.text();
+    let message = "Failed to update 2FA settings";
+    try {
+      const json = raw ? JSON.parse(raw) : null;
+      message = json ? flattenDrfErrors(json) : raw || message;
+    } catch {
+      message = raw || message;
+    }
+    throw new Error(message);
+  }
+
+  return res.json();
+}

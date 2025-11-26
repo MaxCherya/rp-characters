@@ -20,6 +20,7 @@ export default function Menu() {
                     <ButtonGroup className="flex flex-col">
                         <Button onClick={() => router.push('/my-characters')} variant='solid' className="w-full">My Characters <RiArrowRightLine /></Button>
                         <Button onClick={() => router.push('/create-character')} variant='solid' className="w-full">Create a New Character <RiArrowRightLine /></Button>
+                        <Button onClick={() => router.push('/account/settings')} variant='solid' className="w-full">Account Settings <RiArrowRightLine /></Button>
                     </ButtonGroup>
                 </VStack>
             </AbsoluteCenter>

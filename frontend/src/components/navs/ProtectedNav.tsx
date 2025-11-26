@@ -25,6 +25,7 @@ type NavItem = {
 const navItems: NavItem[] = [
     { label: "My Characters", href: "/my-characters" },
     { label: "Create New Character", href: "/create-character" },
+    { label: "Settings", href: "/account/settings" },
 ];
 
 const MotionBox = motion(Box);

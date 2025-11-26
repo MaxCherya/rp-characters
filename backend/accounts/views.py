@@ -4,31 +4,83 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.response import Response
 from rest_framework import status
 from django.conf import settings
+import pyotp
+from accounts.models import TwoFactorConfig
 
 from .serializers import (
-    UserRegistrationSerializer, MeSerializer
+    UserRegistrationSerializer, MeSerializer,
+    TwoFactorTokenObtainPairSerializer, TwoFactorToggleSerializer
 )
 
 
 class CookieTokenObtainPairView(TokenObtainPairView):
+    serializer_class = TwoFactorTokenObtainPairSerializer
+
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         data = response.data
 
-        # read tokens
         access = data.get("access")
         refresh = data.get("refresh")
 
-        # remove from JSON body
         response.data.pop("access", None)
         response.data.pop("refresh", None)
 
-        # set cookies
-        cookie_params = { "httponly": True, "secure": not settings.DEBUG, "samesite": "Lax" }
+        cookie_params = {
+            "httponly": True,
+            "secure": not settings.DEBUG,
+            "samesite": "Lax",
+        }
         response.set_cookie("access_token", access, **cookie_params)
         response.set_cookie("refresh_token", refresh, **cookie_params)
 
         return response
+    
+
+class TwoFactorToggleView(APIView):
+    """
+    GET  /api/accounts/2fa/   -> current 2FA status + provisioning info
+    POST /api/accounts/2fa/   -> enable/disable 2FA (requires otp_code)
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        cfg, _ = TwoFactorConfig.objects.get_or_create(user=user)
+
+        if not cfg.secret:
+            cfg.secret = pyotp.random_base32()
+            cfg.save()
+
+        issuer = getattr(settings, "SITE_NAME", "RP Characters")
+        totp = pyotp.TOTP(cfg.secret)
+        otpauth_url = totp.provisioning_uri(name=user.username, issuer_name=issuer)
+
+        return Response(
+            {
+                "is_enabled": bool(cfg.is_enabled),
+                "has_secret": bool(cfg.secret),
+                "otpauth_url": otpauth_url,
+                "secret": cfg.secret,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def post(self, request):
+        serializer = TwoFactorToggleSerializer(
+            data=request.data,
+            context={"request": request},
+        )
+        serializer.is_valid(raise_exception=True)
+        cfg = serializer.save()
+
+        return Response(
+            {
+                "ok": True,
+                "is_enabled": cfg.is_enabled,
+            },
+            status=status.HTTP_200_OK,
+        )
     
 
 class CookieTokenRefreshView(TokenRefreshView):

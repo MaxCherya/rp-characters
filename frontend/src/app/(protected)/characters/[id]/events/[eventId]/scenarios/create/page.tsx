@@ -75,7 +75,7 @@ export default function CreateScenario() {
             queryClient.invalidateQueries({
                 queryKey: ["event", characterId, eventId],
             });
-            router.push(`/characters/${characterId}/events/${eventId}`);
+            router.back();
         },
         onError: (err: any) => {
             setFormError(err?.message || "Failed to create scenario");
@@ -156,9 +156,7 @@ export default function CreateScenario() {
                             size="sm"
                             variant="outline"
                             onClick={() =>
-                                router.push(
-                                    `/characters/${characterId}/events/${eventId}`,
-                                )
+                                router.back()
                             }
                         >
                             ← Back

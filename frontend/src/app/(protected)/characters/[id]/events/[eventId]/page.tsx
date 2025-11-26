@@ -131,7 +131,9 @@ export default function EventPage() {
                     >
                         Edit
                     </Button>
-                    <Button size="md" colorPalette="green">
+                    <Button onClick={() => router.push(
+                        `/characters/${characterId}/events/${eventId}/play`,
+                    )} size="md" colorPalette="green">
                         Play
                     </Button>
                     <Button

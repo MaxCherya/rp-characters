@@ -85,7 +85,6 @@ if DB_URL:
         "default": dj_database_url.parse(
             DB_URL,
             conn_max_age=600,
-            ssl_require=not DEBUG,
         )
     }
 else:

@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 from dotenv import load_dotenv
 from datetime import timedelta
+import dj_database_url
 
 # ========== INITS ==========
 load_dotenv()
@@ -19,6 +20,7 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret")
 DEBUG = os.getenv("DJANGO_DEBUG", os.getenv("DJANGO-DEBUG", "true")).lower() == "true"
 HOSTS = os.getenv("DJANGO_HOSTS", "localhost,127.0.0.1").split(",")
 HOSTS_URLS = os.getenv("DJANGO_HOSTS_URLS","http://localhost:3000,http://127.0.0.1:3000").split(",")
+DB_URL = os.getenv("DJANGO_DB_URL")
 ALLOWED_HOSTS = HOSTS
 CORS_ALLOWED_ORIGINS = HOSTS_URLS
 CSRF_TRUSTED_ORIGINS = HOSTS_URLS
@@ -36,6 +38,11 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'corsheaders',
+    
+    'accounts',
+    'characters',
+    'stories',
+    'events',
 ]
 
 MIDDLEWARE = [
@@ -73,12 +80,21 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 
 # ========== DATABASE ==========
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if DB_URL:
+    DATABASES = {
+        "default": dj_database_url.parse(
+            DB_URL,
+            conn_max_age=600,
+            ssl_require=not DEBUG,
+        )
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 # ==============================
 
 # ========== AUTH ==========
@@ -112,6 +128,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.AllowAny",
     ),
+    "DATE_FORMAT": "%d.%m.%Y",
 }
 
 SIMPLE_JWT = {

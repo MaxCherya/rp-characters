@@ -2,7 +2,7 @@ from django.urls import path
 from accounts.views import (
     CookieTokenObtainPairView, LogoutView,
     CookieTokenRefreshView, CookieTokenVerifyView,
-    UserView,
+    UserView, TwoFactorToggleView
 )
 
 urlpatterns = [
@@ -11,6 +11,7 @@ urlpatterns = [
     path("refresh/", CookieTokenRefreshView.as_view(), name="token_refresh"),
     path("verify/", CookieTokenVerifyView.as_view(), name="token_verify"),
     path("logout/", LogoutView.as_view(), name="logout"),
+    path("2fa/", TwoFactorToggleView.as_view(), name="two_factor_toggle"),
 
     # User
     path("me/", UserView.as_view(), name="me"),

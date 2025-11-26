@@ -286,9 +286,9 @@ export default function CreateScenario() {
                     {/* Submit */}
                     <Button
                         type="submit"
-                        colorPalette="blue"
                         loading={isSubmitting}
                         loadingText="Creating..."
+                        className="w-full"
                     >
                         Create scenario
                     </Button>

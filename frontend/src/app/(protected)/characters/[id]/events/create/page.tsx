@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { fetchEvent, createEventScenario } from "@/endpoints/events";
-import { Event, ScenarioFormValues } from "@/types/events";
+import { createEvent } from "@/endpoints/events";
+import { EventFormValues } from "@/types/events";
 
 import { useIsSmallScreen } from "@/hooks/useIsSmallScreen";
 import { StoryEditor } from "@/components/stories/StoryEditor";
@@ -19,13 +19,11 @@ import {
     Text,
     VStack,
     HStack,
-    Spinner,
 } from "@chakra-ui/react";
 
-export default function CreateScenario() {
-    const params = useParams<{ id: string; eventId: string }>();
+export default function EventCreate() {
+    const params = useParams<{ id: string }>();
     const characterId = Number(params.id);
-    const eventId = Number(params.eventId);
 
     const router = useRouter();
     const queryClient = useQueryClient();
@@ -40,44 +38,29 @@ export default function CreateScenario() {
         setError,
         clearErrors,
         formState: { errors },
-    } = useForm<ScenarioFormValues>({
+    } = useForm<EventFormValues>({
         defaultValues: {
-            parent: null,
             title: "",
             description: "",
-            weight: 1,
-            is_terminal: false,
+            chance_to_trigger: 100,
         },
-    });
-
-    // Load event (to show title + scenarios for parent selection)
-    const {
-        data: event,
-        isLoading: isEventLoading,
-        isError: isEventError,
-        error: eventError,
-    } = useQuery<Event>({
-        queryKey: ["event", characterId, eventId],
-        queryFn: () => fetchEvent(characterId, eventId),
-        enabled: !Number.isNaN(characterId) && !Number.isNaN(eventId),
     });
 
     const createMutation = useMutation({
-        mutationFn: (values: ScenarioFormValues) =>
-            createEventScenario(characterId, eventId, values),
+        mutationFn: (values: EventFormValues) =>
+            createEvent(characterId, values),
         onSuccess: () => {
-            // refresh event (its scenarios list) and go back
             queryClient.invalidateQueries({
-                queryKey: ["event", characterId, eventId],
+                queryKey: ["events", characterId],
             });
-            router.push(`/characters/${characterId}/events/${eventId}`);
+            router.push(`/characters/${characterId}/events`);
         },
         onError: (err: any) => {
-            setFormError(err?.message || "Failed to create scenario");
+            setFormError(err?.message || "Failed to create event");
         },
     });
 
-    const onSubmit = (values: ScenarioFormValues) => {
+    const onSubmit = (values: EventFormValues) => {
         setFormError(null);
 
         if (!descriptionMarkdown.trim()) {
@@ -89,13 +72,10 @@ export default function CreateScenario() {
         }
         clearErrors("description");
 
-        const payload: ScenarioFormValues = {
-            parent: values.parent,
+        const payload: EventFormValues = {
             title: values.title,
-            // backend only cares about description string; we send the markdown we edit
             description: descriptionMarkdown,
-            weight: values.weight,
-            is_terminal: values.is_terminal,
+            chance_to_trigger: values.chance_to_trigger,
         };
 
         createMutation.mutate(payload);
@@ -103,20 +83,10 @@ export default function CreateScenario() {
 
     const isSubmitting = createMutation.isPending;
 
-    if (isEventLoading) {
+    if (!characterId || Number.isNaN(characterId)) {
         return (
             <main className="min-h-screen flex items-center justify-center">
-                <Spinner size="lg" />
-            </main>
-        );
-    }
-
-    if (isEventError || !event) {
-        return (
-            <main className="min-h-screen flex items-center justify-center">
-                <Text color="red.500">
-                    {(eventError as any)?.message || "Failed to load event"}
-                </Text>
+                <Text color="red.500">Invalid character id</Text>
             </main>
         );
     }
@@ -130,15 +100,14 @@ export default function CreateScenario() {
                 <VStack align="start" gap={4} width="full">
                     <HStack justify="space-between" width="full">
                         <Text fontSize="lg" fontWeight="semibold">
-                            Create Scenario for:{" "}
-                            <span className="font-bold">&quot;{event.title}&quot;</span>
+                            Create Event for character #{characterId}
                         </Text>
                         <Button
                             size="sm"
                             variant="outline"
                             onClick={() =>
                                 router.push(
-                                    `/characters/${characterId}/events/${eventId}`,
+                                    `/characters/${characterId}/events`,
                                 )
                             }
                         >
@@ -162,34 +131,6 @@ export default function CreateScenario() {
                         </Box>
                     )}
 
-                    {/* Parent scenario */}
-                    <div className="w-full">
-                        <label className="block text-sm font-medium mb-1">
-                            Parent scenario (optional)
-                        </label>
-                        <select
-                            {...register("parent", {
-                                setValueAs: (value) =>
-                                    value === "" ? null : Number(value),
-                            })}
-                            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            defaultValue=""
-                            disabled={isSubmitting}
-                        >
-                            <option value="">No parent (root scenario)</option>
-                            {event.scenarios.map((s) => (
-                                <option key={s.id} value={s.id}>
-                                    #{s.id} – {s.title}
-                                </option>
-                            ))}
-                        </select>
-                        {errors.parent && (
-                            <Text fontSize="xs" color="red.500" mt={1}>
-                                {String(errors.parent.message)}
-                            </Text>
-                        )}
-                    </div>
-
                     {/* Title */}
                     <div className="w-full">
                         <label className="block text-sm font-medium mb-1">
@@ -197,7 +138,7 @@ export default function CreateScenario() {
                         </label>
                         <Input
                             bg="white"
-                            placeholder="Scenario title..."
+                            placeholder="Event title..."
                             disabled={isSubmitting}
                             {...register("title", {
                                 required: "Title is required",
@@ -215,49 +156,41 @@ export default function CreateScenario() {
                         )}
                     </div>
 
-                    {/* Weight */}
+                    {/* Chance to trigger */}
                     <div className="w-full">
                         <label className="block text-sm font-medium mb-1">
-                            Weight (relative chance among siblings)
+                            Chance to trigger (%){" "}
+                            <span className="text-red-500">*</span>
                         </label>
                         <Input
                             bg="white"
                             type="number"
-                            min={1}
-                            defaultValue={1}
+                            min={0}
+                            max={100}
+                            defaultValue={100}
                             disabled={isSubmitting}
-                            {...register("weight", {
-                                required: "Weight is required",
-                                min: { value: 1, message: "Minimum is 1" },
+                            {...register("chance_to_trigger", {
+                                required: "Chance to trigger is required",
                                 valueAsNumber: true,
+                                min: {
+                                    value: 0,
+                                    message: "Minimum is 0",
+                                },
+                                max: {
+                                    value: 100,
+                                    message: "Maximum is 100",
+                                },
                             })}
                         />
-                        {errors.weight && (
+                        {errors.chance_to_trigger && (
                             <Text fontSize="xs" color="red.500" mt={1}>
-                                {errors.weight.message}
+                                {errors.chance_to_trigger.message}
                             </Text>
                         )}
                         <Text fontSize="xs" color="gray.500" mt={1}>
-                            Sibling scenarios will be chosen proportionally to
-                            their weights.
+                            Rough probability that this event can fire when
+                            conditions are met.
                         </Text>
-                    </div>
-
-                    {/* Is terminal */}
-                    <div className="w-full flex items-center gap-2">
-                        <input
-                            id="is_terminal"
-                            type="checkbox"
-                            disabled={isSubmitting}
-                            {...register("is_terminal")}
-                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <label
-                            htmlFor="is_terminal"
-                            className="text-sm text-gray-700"
-                        >
-                            This scenario is terminal (branch stops here)
-                        </label>
                     </div>
 
                     {/* Description Markdown */}
@@ -281,10 +214,9 @@ export default function CreateScenario() {
                             />
                         )}
 
-                        <Text fontSize="xs" color="gray.500" mt={1}>
-                            Use the editor above to write the scenario in
-                            Markdown, then click &quot;Create scenario&quot;
-                            below.
+                        <Text fontSize="xs" color="gray.500" mt={7}>
+                            Use the editor above to write the event in Markdown,
+                            then click &quot;Create event&quot; below.
                         </Text>
 
                         {errors.description && (
@@ -297,11 +229,11 @@ export default function CreateScenario() {
                     {/* Submit */}
                     <Button
                         type="submit"
-                        colorPalette="blue"
                         loading={isSubmitting}
                         loadingText="Creating..."
+                        className="w-full"
                     >
-                        Create scenario
+                        Create event
                     </Button>
                 </VStack>
             </form>

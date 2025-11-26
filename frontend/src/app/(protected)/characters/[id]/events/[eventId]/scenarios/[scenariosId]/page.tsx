@@ -196,7 +196,6 @@ export default function ScenarioPage() {
                     {!scenario.is_terminal && (
                         <Button
                             size="md"
-                            colorPalette="blue"
                             onClick={() =>
                                 router.push(
                                     `/characters/${characterId}/events/${eventId}/scenarios/create?parent=${scenario.id}`,

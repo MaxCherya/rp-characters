@@ -26,10 +26,12 @@ class CookieTokenObtainPairView(TokenObtainPairView):
         response.data.pop("access", None)
         response.data.pop("refresh", None)
 
+        secure = not settings.DEBUG
+
         cookie_params = {
             "httponly": True,
             "secure": not settings.DEBUG,
-            "samesite": "Lax",
+            "samesite": "None" if secure else "Lax",
         }
         response.set_cookie("access_token", access, **cookie_params)
         response.set_cookie("refresh_token", refresh, **cookie_params)
@@ -94,7 +96,8 @@ class CookieTokenRefreshView(TokenRefreshView):
         response = super().post(request, *args, **kwargs)
         if response.status_code == 200:
             access = response.data.get("access")
-            cookie_params = { "httponly": True, "secure": not settings.DEBUG, "samesite": "Lax" }
+            secure = not settings.DEBUG
+            cookie_params = { "httponly": True, "secure": not settings.DEBUG, "samesite": "None" if secure else "Lax", }
             response.set_cookie("access_token", access, **cookie_params)
             response.data.pop("access", None)
         return response

@@ -49,12 +49,17 @@ export default function EventCreate() {
     const createMutation = useMutation({
         mutationFn: (values: EventFormValues) =>
             createEvent(characterId, values),
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ["events", characterId],
+
+        onSuccess: (newEvent) => {
+            // Update the events list in cache without refetching
+            queryClient.setQueryData<Event[]>(["events", characterId], (old) => {
+                if (!old) return [newEvent];
+                return [newEvent, ...old]; // push to front
             });
+
             router.push(`/characters/${characterId}/events`);
         },
+
         onError: (err: any) => {
             setFormError(err?.message || "Failed to create event");
         },
